@@ -71,7 +71,7 @@ public sealed class MarkerArDemo : MonoBehaviour
 
         GameObject car = Instantiate(prefab, root.transform, false);
         car.name = "Apollo Intensa Emozione (Black Snow)";
-        ApplyWhiteBodyPaint(car);
+        ConfigureApolloMaterials(car);
 
         Renderer[] renderers = car.GetComponentsInChildren<Renderer>();
         if (renderers.Length > 0)
@@ -88,21 +88,38 @@ public sealed class MarkerArDemo : MonoBehaviour
         return root;
     }
 
-    static void ApplyWhiteBodyPaint(GameObject car)
+    static void ConfigureApolloMaterials(GameObject car)
     {
-        Color pearlWhite = new Color(.96f, .97f, 1f, 1f);
+        Shader urpLit = Shader.Find("Universal Render Pipeline/Lit");
+        Color apolloOrange = new Color(1f, .18f, .015f, 1f);
         foreach (Renderer renderer in car.GetComponentsInChildren<Renderer>())
         {
             Material[] materials = renderer.materials;
             foreach (Material material in materials)
             {
                 string materialName = material.name.Replace(" (Instance)", string.Empty).Trim();
-                if (!string.Equals(materialName, "apolloie", System.StringComparison.OrdinalIgnoreCase)) continue;
+                Color originalColor = material.color;
+                Texture originalTexture = material.mainTexture;
 
-                material.color = pearlWhite;
-                if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", pearlWhite);
-                if (material.HasProperty("_Metallic")) material.SetFloat("_Metallic", .55f);
-                if (material.HasProperty("_Smoothness")) material.SetFloat("_Smoothness", .88f);
+                // The downloaded FBX uses shaders that render magenta in URP.
+                // Convert every material to URP/Lit while retaining its original look.
+                if (urpLit != null) material.shader = urpLit;
+                if (originalTexture != null)
+                {
+                    material.mainTexture = originalTexture;
+                    if (material.HasProperty("_BaseMap")) material.SetTexture("_BaseMap", originalTexture);
+                }
+
+                bool isBodyPaint = string.Equals(materialName, "apolloie", System.StringComparison.OrdinalIgnoreCase);
+                Color finalColor = isBodyPaint ? apolloOrange : originalColor;
+                material.color = finalColor;
+                if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", finalColor);
+
+                if (isBodyPaint)
+                {
+                    if (material.HasProperty("_Metallic")) material.SetFloat("_Metallic", .65f);
+                    if (material.HasProperty("_Smoothness")) material.SetFloat("_Smoothness", .9f);
+                }
             }
         }
     }
