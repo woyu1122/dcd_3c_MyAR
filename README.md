@@ -1,6 +1,6 @@
-# 圖像辨識 AR－海龜模型
+# 圖像辨識 AR－Apollo 超跑
 
-這是一個 Unity 6 圖像標記辨識作業。程式會從攝影機畫面尋找專案內的**黑白太陽圖卡**，辨識成功後在符號位置顯示並追蹤程序產生的 3D 海龜模型。
+這是一個 Unity 6 圖像標記辨識作業。程式會從攝影機畫面尋找專案內的**黑白太陽圖卡**，辨識成功後在符號位置顯示並追蹤程序產生的橘黑色 Apollo 風格 3D 超跑。
 
 ## 執行方式
 
@@ -9,7 +9,7 @@
 3. 有攝影機時，將 `Assets/_Project/Resources/SunMarker.png` 太陽圖卡放到鏡頭前。
 4. 沒有攝影機時會自動進入 Demo Mode；空白鍵可切換模式。
 
-功能包括攝影機偵測、黑白太陽圖卡辨識、3D 海龜追蹤，以及無攝影機模擬展示。主要程式位於 `Assets/_Project/Scripts/Runtime/MarkerArDemo.cs`。
+功能包括攝影機偵測、黑白太陽圖卡辨識、3D Apollo 超跑追蹤，以及無攝影機模擬展示。主要程式位於 `Assets/_Project/Scripts/Runtime/MarkerArDemo.cs`。
 
 ---
 

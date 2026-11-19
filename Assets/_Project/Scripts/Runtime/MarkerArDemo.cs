@@ -50,7 +50,7 @@ public sealed class MarkerArDemo : MonoBehaviour
         feedRenderer = feed.GetComponent<Renderer>();
         feedRenderer.material = new Material(Shader.Find("Unlit/Texture"));
         sunMarker = Resources.Load<Texture2D>("SunMarker");
-        model = BuildTurtle();
+        model = BuildApolloCar();
         model.SetActive(false);
 
         Light light = new GameObject("AR Key Light").AddComponent<Light>();
@@ -59,24 +59,55 @@ public sealed class MarkerArDemo : MonoBehaviour
         light.transform.rotation = Quaternion.Euler(35, -30, 0);
     }
 
-    static GameObject BuildTurtle()
+    static GameObject BuildApolloCar()
     {
-        GameObject root = new GameObject("Tracked Turtle Model");
-        AddPart(root.transform, "Shell", Vector3.zero, new Vector3(1.7f, .45f, 1.25f), new Color(.1f, .62f, .34f));
-        AddPart(root.transform, "Head", new Vector3(0, 0, -1.05f), new Vector3(.58f, .42f, .58f), new Color(.4f, .88f, .52f));
-        Vector3[] fins = { new Vector3(-1.05f,0,-.55f), new Vector3(1.05f,0,-.55f), new Vector3(-.95f,0,.65f), new Vector3(.95f,0,.65f) };
-        foreach (Vector3 p in fins) AddPart(root.transform, "Flipper", p, new Vector3(.7f,.14f,.32f), new Color(.28f,.78f,.43f));
+        GameObject root = new GameObject("Tracked Apollo Supercar");
+        Color orange = new Color(1f, .22f, .025f);
+        Color dark = new Color(.025f, .03f, .04f);
+        Color glass = new Color(.04f, .12f, .18f);
+
+        AddPart(root.transform, PrimitiveType.Cube, "Body", new Vector3(0, 0, 0),
+            new Vector3(1.75f, .34f, 3.2f), Vector3.zero, orange);
+        AddPart(root.transform, PrimitiveType.Cube, "Front Wedge", new Vector3(0, -.03f, -1.7f),
+            new Vector3(1.55f, .18f, .65f), new Vector3(10, 0, 0), orange);
+        AddPart(root.transform, PrimitiveType.Sphere, "Cockpit", new Vector3(0, .35f, .15f),
+            new Vector3(1.22f, .48f, 1.45f), Vector3.zero, glass);
+        AddPart(root.transform, PrimitiveType.Cube, "Center Stripe", new Vector3(0, .2f, -.55f),
+            new Vector3(.22f, .08f, 1.8f), Vector3.zero, dark);
+        AddPart(root.transform, PrimitiveType.Cube, "Rear Wing", new Vector3(0, .62f, 1.5f),
+            new Vector3(2.05f, .12f, .42f), new Vector3(-8, 0, 0), dark);
+        AddPart(root.transform, PrimitiveType.Cube, "Wing Stand L", new Vector3(-.55f, .38f, 1.42f),
+            new Vector3(.12f, .55f, .12f), Vector3.zero, dark);
+        AddPart(root.transform, PrimitiveType.Cube, "Wing Stand R", new Vector3(.55f, .38f, 1.42f),
+            new Vector3(.12f, .55f, .12f), Vector3.zero, dark);
+
+        Vector3[] wheelPositions =
+        {
+            new Vector3(-.92f,-.18f,-1.05f), new Vector3(.92f,-.18f,-1.05f),
+            new Vector3(-.92f,-.18f,1.05f), new Vector3(.92f,-.18f,1.05f)
+        };
+        foreach (Vector3 p in wheelPositions)
+            AddPart(root.transform, PrimitiveType.Cylinder, "Wheel", p,
+                new Vector3(.42f, .18f, .42f), new Vector3(0, 0, 90), dark);
+
+        AddPart(root.transform, PrimitiveType.Sphere, "Headlight L", new Vector3(-.52f, .13f, -1.78f),
+            new Vector3(.33f, .08f, .12f), Vector3.zero, new Color(.65f, .9f, 1f));
+        AddPart(root.transform, PrimitiveType.Sphere, "Headlight R", new Vector3(.52f, .13f, -1.78f),
+            new Vector3(.33f, .08f, .12f), Vector3.zero, new Color(.65f, .9f, 1f));
+
         root.transform.rotation = Quaternion.Euler(55, 0, 0);
         return root;
     }
 
-    static void AddPart(Transform parent, string name, Vector3 position, Vector3 scale, Color color)
+    static void AddPart(Transform parent, PrimitiveType primitive, string name, Vector3 position,
+        Vector3 scale, Vector3 rotation, Color color)
     {
-        GameObject part = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        GameObject part = GameObject.CreatePrimitive(primitive);
         part.name = name;
         part.transform.SetParent(parent, false);
         part.transform.localPosition = position;
         part.transform.localScale = scale;
+        part.transform.localEulerAngles = rotation;
         Renderer r = part.GetComponent<Renderer>();
         Shader shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
         r.material = new Material(shader);
@@ -144,7 +175,7 @@ public sealed class MarkerArDemo : MonoBehaviour
             if (luminance < 70) { sx+=x; sy+=y; count++; }
         }
         markerVisible = count >= Mathf.Max(40, width*height/2500);
-        if (markerVisible) { markerViewport = new Vector2(Mathf.Clamp01((float)sx/count/width), Mathf.Clamp01((float)sy/count/height)); status="已辨識太陽符號：顯示海龜模型"; }
+        if (markerVisible) { markerViewport = new Vector2(Mathf.Clamp01((float)sx/count/width), Mathf.Clamp01((float)sy/count/height)); status="已辨識太陽符號：顯示 Apollo 超跑"; }
         else status="搜尋符號中…請出示黑白太陽圖卡";
     }
 
@@ -163,7 +194,7 @@ public sealed class MarkerArDemo : MonoBehaviour
     {
         GUIStyle title=new GUIStyle(GUI.skin.label){fontSize=Mathf.RoundToInt(Mathf.Clamp(Screen.height*.04f,22,38)),fontStyle=FontStyle.Bold}; title.normal.textColor=Color.white;
         GUIStyle body=new GUIStyle(GUI.skin.box){fontSize=Mathf.RoundToInt(Mathf.Clamp(Screen.height*.023f,15,24)),alignment=TextAnchor.MiddleLeft}; body.normal.textColor=Color.white;
-        GUI.Label(new Rect(24,18,Screen.width-48,55),"太陽圖卡 AR－海龜模型",title);
+        GUI.Label(new Rect(24,18,Screen.width-48,55),"太陽圖卡 AR－Apollo 超跑",title);
         GUI.Box(new Rect(24,Screen.height-100,Screen.width-48,70),status+"\n空白鍵：切換攝影機／示範模式",body);
         if(demoMode) GUI.Label(new Rect(Screen.width-240,24,210,45),"DEMO MODE",title);
     }
