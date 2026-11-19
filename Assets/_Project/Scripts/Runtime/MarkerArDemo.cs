@@ -71,6 +71,7 @@ public sealed class MarkerArDemo : MonoBehaviour
 
         GameObject car = Instantiate(prefab, root.transform, false);
         car.name = "Apollo Intensa Emozione (Black Snow)";
+        ApplyWhiteBodyPaint(car);
 
         Renderer[] renderers = car.GetComponentsInChildren<Renderer>();
         if (renderers.Length > 0)
@@ -85,6 +86,25 @@ public sealed class MarkerArDemo : MonoBehaviour
 
         root.transform.rotation = Quaternion.identity;
         return root;
+    }
+
+    static void ApplyWhiteBodyPaint(GameObject car)
+    {
+        Color pearlWhite = new Color(.96f, .97f, 1f, 1f);
+        foreach (Renderer renderer in car.GetComponentsInChildren<Renderer>())
+        {
+            Material[] materials = renderer.materials;
+            foreach (Material material in materials)
+            {
+                string materialName = material.name.Replace(" (Instance)", string.Empty).Trim();
+                if (!string.Equals(materialName, "apolloie", System.StringComparison.OrdinalIgnoreCase)) continue;
+
+                material.color = pearlWhite;
+                if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", pearlWhite);
+                if (material.HasProperty("_Metallic")) material.SetFloat("_Metallic", .55f);
+                if (material.HasProperty("_Smoothness")) material.SetFloat("_Smoothness", .88f);
+            }
+        }
     }
 
     IEnumerator StartInput()
