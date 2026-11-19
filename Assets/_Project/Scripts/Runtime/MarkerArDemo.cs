@@ -83,7 +83,7 @@ public sealed class MarkerArDemo : MonoBehaviour
             car.transform.localPosition = -bounds.center * scale;
         }
 
-        root.transform.rotation = Quaternion.Euler(55, 0, 0);
+        root.transform.rotation = Quaternion.identity;
         return root;
     }
 
@@ -157,8 +157,9 @@ public sealed class MarkerArDemo : MonoBehaviour
         float aspect = activeTexture == null ? 16f/9f : (float)activeTexture.width/activeTexture.height;
         Vector3 target = new Vector3((markerViewport.x-.5f)*ViewHeight*aspect, (markerViewport.y-.5f)*ViewHeight, 0);
         model.transform.position = Vector3.Lerp(model.transform.position, target, 10*Time.deltaTime);
-        model.transform.Rotate(Vector3.up, 35*Time.deltaTime, Space.World);
-        model.transform.localScale = Vector3.one * (.68f + Mathf.Sin(Time.time*2.5f)*.04f);
+        // Keep the car level and rotate it around its vertical axis like a showroom turntable.
+        model.transform.rotation = Quaternion.Euler(0f, Time.time * 28f, 0f);
+        model.transform.localScale = Vector3.one * (.95f + Mathf.Sin(Time.time*2.5f)*.025f);
     }
 
     void OnGUI()
