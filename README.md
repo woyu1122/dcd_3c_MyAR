@@ -1,6 +1,8 @@
-# 圖像辨識 AR－Apollo 超跑
+# 圖像辨識 AR－Apollo Intensa Emozione
 
-這是一個 Unity 6 圖像標記辨識作業。程式會從攝影機畫面尋找專案內的**黑白太陽圖卡**，辨識成功後在符號位置顯示並追蹤程序產生的橘黑色 Apollo 風格 3D 超跑。
+這是一個 Unity 6 圖像標記辨識作業。程式會從攝影機畫面尋找專案內的**黑白太陽圖卡**，辨識成功後在符號位置顯示並追蹤真正的 Apollo Intensa Emozione 3D 超跑。沒有攝影機時會自動進入 Demo Mode，因此也能直接按 Play 檢查效果。
+
+3D 車模：[`Apollo Intensa Emozione`](https://sketchfab.com/3d-models/apollo-intensa-emozione-6fc4827592ad48d383b09e217d163895)，作者 Black Snow，依 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) 授權使用。完整標示位於 `Assets/_Project/Resources/ApolloIE/MODEL_LICENSE.md`。
 
 ## 執行方式
 

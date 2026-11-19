@@ -50,7 +50,7 @@ public sealed class MarkerArDemo : MonoBehaviour
         feedRenderer = feed.GetComponent<Renderer>();
         feedRenderer.material = new Material(Shader.Find("Unlit/Texture"));
         sunMarker = Resources.Load<Texture2D>("SunMarker");
-        model = BuildApolloCar();
+        model = LoadApolloCar();
         model.SetActive(false);
 
         Light light = new GameObject("AR Key Light").AddComponent<Light>();
@@ -59,61 +59,32 @@ public sealed class MarkerArDemo : MonoBehaviour
         light.transform.rotation = Quaternion.Euler(35, -30, 0);
     }
 
-    static GameObject BuildApolloCar()
+    static GameObject LoadApolloCar()
     {
-        GameObject root = new GameObject("Tracked Apollo Supercar");
-        Color orange = new Color(1f, .22f, .025f);
-        Color dark = new Color(.025f, .03f, .04f);
-        Color glass = new Color(.04f, .12f, .18f);
-
-        AddPart(root.transform, PrimitiveType.Cube, "Body", new Vector3(0, 0, 0),
-            new Vector3(1.75f, .34f, 3.2f), Vector3.zero, orange);
-        AddPart(root.transform, PrimitiveType.Cube, "Front Wedge", new Vector3(0, -.03f, -1.7f),
-            new Vector3(1.55f, .18f, .65f), new Vector3(10, 0, 0), orange);
-        AddPart(root.transform, PrimitiveType.Sphere, "Cockpit", new Vector3(0, .35f, .15f),
-            new Vector3(1.22f, .48f, 1.45f), Vector3.zero, glass);
-        AddPart(root.transform, PrimitiveType.Cube, "Center Stripe", new Vector3(0, .2f, -.55f),
-            new Vector3(.22f, .08f, 1.8f), Vector3.zero, dark);
-        AddPart(root.transform, PrimitiveType.Cube, "Rear Wing", new Vector3(0, .62f, 1.5f),
-            new Vector3(2.05f, .12f, .42f), new Vector3(-8, 0, 0), dark);
-        AddPart(root.transform, PrimitiveType.Cube, "Wing Stand L", new Vector3(-.55f, .38f, 1.42f),
-            new Vector3(.12f, .55f, .12f), Vector3.zero, dark);
-        AddPart(root.transform, PrimitiveType.Cube, "Wing Stand R", new Vector3(.55f, .38f, 1.42f),
-            new Vector3(.12f, .55f, .12f), Vector3.zero, dark);
-
-        Vector3[] wheelPositions =
+        GameObject prefab = Resources.Load<GameObject>("ApolloIE/ApolloIE");
+        GameObject root = new GameObject("Tracked Apollo Intensa Emozione");
+        if (prefab == null)
         {
-            new Vector3(-.92f,-.18f,-1.05f), new Vector3(.92f,-.18f,-1.05f),
-            new Vector3(-.92f,-.18f,1.05f), new Vector3(.92f,-.18f,1.05f)
-        };
-        foreach (Vector3 p in wheelPositions)
-            AddPart(root.transform, PrimitiveType.Cylinder, "Wheel", p,
-                new Vector3(.42f, .18f, .42f), new Vector3(0, 0, 90), dark);
+            Debug.LogError("ApolloIE model is missing from Resources/ApolloIE.");
+            return root;
+        }
 
-        AddPart(root.transform, PrimitiveType.Sphere, "Headlight L", new Vector3(-.52f, .13f, -1.78f),
-            new Vector3(.33f, .08f, .12f), Vector3.zero, new Color(.65f, .9f, 1f));
-        AddPart(root.transform, PrimitiveType.Sphere, "Headlight R", new Vector3(.52f, .13f, -1.78f),
-            new Vector3(.33f, .08f, .12f), Vector3.zero, new Color(.65f, .9f, 1f));
+        GameObject car = Instantiate(prefab, root.transform, false);
+        car.name = "Apollo Intensa Emozione (Black Snow)";
+
+        Renderer[] renderers = car.GetComponentsInChildren<Renderer>();
+        if (renderers.Length > 0)
+        {
+            Bounds bounds = renderers[0].bounds;
+            for (int i = 1; i < renderers.Length; i++) bounds.Encapsulate(renderers[i].bounds);
+            float longestSide = Mathf.Max(bounds.size.x, bounds.size.y, bounds.size.z);
+            float scale = longestSide > .001f ? 3.4f / longestSide : 1f;
+            car.transform.localScale = Vector3.one * scale;
+            car.transform.localPosition = -bounds.center * scale;
+        }
 
         root.transform.rotation = Quaternion.Euler(55, 0, 0);
         return root;
-    }
-
-    static void AddPart(Transform parent, PrimitiveType primitive, string name, Vector3 position,
-        Vector3 scale, Vector3 rotation, Color color)
-    {
-        GameObject part = GameObject.CreatePrimitive(primitive);
-        part.name = name;
-        part.transform.SetParent(parent, false);
-        part.transform.localPosition = position;
-        part.transform.localScale = scale;
-        part.transform.localEulerAngles = rotation;
-        Renderer r = part.GetComponent<Renderer>();
-        Shader shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
-        r.material = new Material(shader);
-        r.material.color = color;
-        Collider collider = part.GetComponent<Collider>();
-        if (collider != null) Destroy(collider);
     }
 
     IEnumerator StartInput()
