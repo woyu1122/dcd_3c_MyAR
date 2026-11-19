@@ -12,6 +12,7 @@ public sealed class MarkerArDemo : MonoBehaviour
     GameObject model;
     WebCamTexture webcam;
     Texture2D demoTexture;
+    Texture2D sunMarker;
     Texture activeTexture;
     bool demoMode = true, markerVisible;
     string status = "正在初始化…";
@@ -48,6 +49,7 @@ public sealed class MarkerArDemo : MonoBehaviour
         feed.transform.position = new Vector3(0, 0, 2);
         feedRenderer = feed.GetComponent<Renderer>();
         feedRenderer.material = new Material(Shader.Find("Unlit/Texture"));
+        sunMarker = Resources.Load<Texture2D>("SunMarker");
         model = BuildTurtle();
         model.SetActive(false);
 
@@ -101,11 +103,10 @@ public sealed class MarkerArDemo : MonoBehaviour
     void EnableDemo(string message)
     {
         demoMode = true;
-        if (demoTexture == null) { demoTexture = new Texture2D(W, H, TextureFormat.RGBA32, false); demoTexture.wrapMode = TextureWrapMode.Clamp; }
-        activeTexture = demoTexture;
+        activeTexture = sunMarker;
         feedRenderer.material.mainTexture = activeTexture;
         status = message;
-        FitFeed(W, H);
+        FitFeed(1, 1);
     }
 
     void FitFeed(int width, int height)
@@ -122,29 +123,29 @@ public sealed class MarkerArDemo : MonoBehaviour
         }
         if (demoMode)
         {
-            if (demoTexture == null) EnableDemo("無攝影機示範模式");
-            DrawDemo(); markerVisible = true;
-            markerViewport = new Vector2(.5f + Mathf.Sin(Time.time*.65f)*.24f, .5f + Mathf.Cos(Time.time*.8f)*.15f);
+            markerVisible = true;
+            markerViewport = new Vector2(.5f, .5f);
         }
         else if (webcam != null && webcam.didUpdateThisFrame && Time.unscaledTime >= nextDetection)
         {
             nextDetection = Time.unscaledTime + .12f;
-            Detect(webcam.GetPixels32(), webcam.width, webcam.height);
+            DetectSunMarker(webcam.GetPixels32(), webcam.width, webcam.height);
         }
         UpdateModel();
     }
 
-    void Detect(Color32[] pixels, int width, int height)
+    void DetectSunMarker(Color32[] pixels, int width, int height)
     {
         long sx=0, sy=0; int count=0;
         for (int y=0; y<height; y+=4) for (int x=0; x<width; x+=4)
         {
             Color32 p = pixels[y*width+x];
-            if (p.r>155 && p.b>135 && p.g<125 && p.r>p.g*1.35f && p.b>p.g*1.2f) { sx+=x; sy+=y; count++; }
+            int luminance = (p.r * 3 + p.g * 6 + p.b) / 10;
+            if (luminance < 70) { sx+=x; sy+=y; count++; }
         }
-        markerVisible = count >= Mathf.Max(12, width*height/9000);
-        if (markerVisible) { markerViewport = new Vector2(Mathf.Clamp01((float)sx/count/width), Mathf.Clamp01((float)sy/count/height)); status="已辨識符號：顯示海龜模型"; }
-        else status="搜尋符號中…請出示洋紅色方形標記";
+        markerVisible = count >= Mathf.Max(40, width*height/2500);
+        if (markerVisible) { markerViewport = new Vector2(Mathf.Clamp01((float)sx/count/width), Mathf.Clamp01((float)sy/count/height)); status="已辨識太陽符號：顯示海龜模型"; }
+        else status="搜尋符號中…請出示黑白太陽圖卡";
     }
 
     void UpdateModel()
@@ -158,21 +159,11 @@ public sealed class MarkerArDemo : MonoBehaviour
         model.transform.localScale = Vector3.one * (.68f + Mathf.Sin(Time.time*2.5f)*.04f);
     }
 
-    void DrawDemo()
-    {
-        int mx=Mathf.RoundToInt((.5f+Mathf.Sin(Time.time*.65f)*.24f)*W), my=Mathf.RoundToInt((.5f+Mathf.Cos(Time.time*.8f)*.15f)*H);
-        Color32 a=new Color32(18,31,48,255), b=new Color32(30,53,70,255), magenta=new Color32(245,30,210,255), white=new Color32(255,255,255,255);
-        Color32[] pixels=demoTexture.GetPixels32();
-        for(int y=0;y<H;y++) for(int x=0;x<W;x++) pixels[y*W+x]=((x/40+y/40)%2==0)?a:b;
-        for(int y=my-45;y<=my+45;y++) { if(y<0||y>=H) continue; for(int x=mx-45;x<=mx+45;x++) { if(x<0||x>=W) continue; pixels[y*W+x]=(Mathf.Abs(x-mx)<8||Mathf.Abs(y-my)<8)?white:magenta; } }
-        demoTexture.SetPixels32(pixels); demoTexture.Apply(false);
-    }
-
     void OnGUI()
     {
         GUIStyle title=new GUIStyle(GUI.skin.label){fontSize=Mathf.RoundToInt(Mathf.Clamp(Screen.height*.04f,22,38)),fontStyle=FontStyle.Bold}; title.normal.textColor=Color.white;
         GUIStyle body=new GUIStyle(GUI.skin.box){fontSize=Mathf.RoundToInt(Mathf.Clamp(Screen.height*.023f,15,24)),alignment=TextAnchor.MiddleLeft}; body.normal.textColor=Color.white;
-        GUI.Label(new Rect(24,18,Screen.width-48,55),"圖像辨識 AR－海龜模型",title);
+        GUI.Label(new Rect(24,18,Screen.width-48,55),"太陽圖卡 AR－海龜模型",title);
         GUI.Box(new Rect(24,Screen.height-100,Screen.width-48,70),status+"\n空白鍵：切換攝影機／示範模式",body);
         if(demoMode) GUI.Label(new Rect(Screen.width-240,24,210,45),"DEMO MODE",title);
     }
